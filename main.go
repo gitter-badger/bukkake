@@ -1,4 +1,3 @@
-
 package main
 
 import (
@@ -58,8 +57,9 @@ func main() {
 }
 
 func onStart() {
+	array := loadShaders("vShader.vs", "fShader.vs")
 	var err error
-	program, err = glutil.CreateProgram(vertexSrc, fragmentSrc)
+	program, err = glutil.CreateProgram(array[0], array[1])
 	if err != nil {
 		log.Printf("error creating GL program: %v", err)
 		return
@@ -148,11 +148,10 @@ var triangleData = f32.Bytes(binary.LittleEndian,
 	0.4, 0.0, 0.0, // bottom right
 )
 
-const vertexSrc= `#version 120
+const vertexSrc= `#version 100
 //uniform vec2 offset;
 uniform mat3 rotationMatrix;
 uniform float resIndex;
-
 attribute vec4 position;
 void main() {
 	// offset comes in with x/y values between 0 and 1.
@@ -162,7 +161,7 @@ void main() {
 	gl_Position = vec4(pos.x, pos.y*resIndex, pos.z, 1.0);
 }`
 
-const fragmentSrc = `#version 120
+const fragmentSrc = `#version 100
 precision mediump float;
 uniform vec4 color;
 void main() {
