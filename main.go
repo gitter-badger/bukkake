@@ -16,6 +16,7 @@ import (
 	"golang.org/x/mobile/exp/gl/glutil"
 
 	"log"
+	//"math"
 
 )
 
@@ -24,8 +25,10 @@ var (
 	position gl.Attrib
 	//offset   gl.Uniform
 	color    gl.Uniform
+	matrixId    gl.Uniform
 	buf      gl.Buffer
 	swBuf    gl.Buffer
+	rotationMatrix []float32
 
 )
 
@@ -52,43 +55,6 @@ func main() {
 }
 
 func onStart() {
-	/*
-	
-	var vertexSrc, fragmentSrc string
-	program := gl.CreateProgram()
-
-	vertexShader := gl.CreateShader(gl.VERTEX_SHADER)
-	gl.ShaderSource(vertexShader, vertexSrc)
-	gl.CompileShader(vertexShader)
-
-	if gl.GetShaderi(vertexShader, gl.COMPILE_STATUS) == 0 {
-		defer gl.DeleteShader(vertexShader)
-		log.Printf("shader compile: %s", gl.GetShaderInfoLog(vertexShader))
-	}
-
-	fragmentShader := gl.CreateShader(gl.FRAGMENT_SHADER)
-	gl.ShaderSource(fragmentShader, fragmentSrc)
-	gl.CompileShader(fragmentShader)
-
-	if gl.GetShaderi(fragmentShader, gl.COMPILE_STATUS)	== 0 {
-		defer gl.DeleteShader(fragmentShader)
-		log.Printf("shader compile: %s", gl.GetShaderInfoLog(fragmentShader))
-	}
-
-	gl.AttachShader(program, vertexShader)
-	gl.AttachShader(program, fragmentShader)
-
-	gl.LinkProgram(program)
-
-	gl.DeleteShader(vertexShader)
-	gl.DeleteShader(fragmentShader)
-
-	if gl.GetProgrami(program, gl.LINK_STATUS) == 0 {
-		defer gl.DeleteProgram(program)
-		log.Printf("program : %s", gl.GetProgramInfoLog(program))
-	}
-	
-	*/
 	var err error
 	program, err = glutil.CreateProgram(vertexSrc, fragmentSrc)
 	if err != nil {
@@ -96,25 +62,24 @@ func onStart() {
 		return
 	}
 
-
 	// Creating buffer
 	buf = gl.CreateBuffer()
-
-	// Starting work with buffer
-	/*gl.BindBuffer(gl.ARRAY_BUFFER, buf)
-	gl.BufferData(gl.ARRAY_BUFFER, triangleData, gl.STATIC_DRAW)*/
-	
 
 	swBuf = gl.CreateBuffer()
 
 	gl.BindBuffer(gl.ARRAY_BUFFER, swBuf)
 	gl.BufferData(gl.ARRAY_BUFFER, swastikaData, gl.STATIC_DRAW)
-	
-
 
 	position = gl.GetAttribLocation(program, "position")
-	//offset   = gl.GetUniformLocation(program, "offset")
 	color    = gl.GetUniformLocation(program, "color")
+	matrixId = gl.GetUniformLocation(program, "rotationMatrix")
+
+	rotationMatrix = []float32 {
+		0.866, 	-0.5, 	0.0, // top left
+		0.5, 	0.866, 	0.0, // bottom left
+		0.0, 	0.0,    1.0, // bottom right
+		
+	}
 }
 
 func onStop() {
@@ -129,16 +94,10 @@ func onPaint(sz size.Event) {
 
 
 	gl.UseProgram(program)
-
 	// setting color
-	gl.Uniform4f(color, 1.0, 0.0, 0.3, 1)
-	// Opening buffer
-	//gl.BindBuffer(gl.ARRAY_BUFFER, buf)
+	gl.Uniform4f(color, 1.0, 1.0, 1.0, 1)
 
-	/*gl.EnableVertexAttribArray(position)
-	gl.VertexAttribPointer(position, 3, gl.FLOAT, false, 0, 0) 
-	gl.DrawArrays(gl.TRIANGLES, 0, 3)
-	gl.DisableVertexAttribArray(position)*/
+	gl.UniformMatrix3fv(matrixId, rotationMatrix)
 
 	gl.BindBuffer(gl.ARRAY_BUFFER, swBuf)
 
@@ -146,15 +105,7 @@ func onPaint(sz size.Event) {
 	gl.VertexAttribPointer(position, 3, gl.FLOAT, false, 0, 0)
 	gl.DrawArrays(gl.LINES, 0, 16)
 	gl.DisableVertexAttribArray(position)
-
-
 }
-
-var triangleData = f32.Bytes(binary.LittleEndian,
-	0.0, 0.4, 0.0, // top left
-	0.0, 0.0, 0.0, // bottom left
-	0.4, 0.0, 0.0, // bottom right
-)
 
 var swastikaData = f32.Bytes(binary.LittleEndian,
 	0.0, -0.3, 0.0,     0.0, 0.3, 0.0,
@@ -170,6 +121,7 @@ var swastikaData = f32.Bytes(binary.LittleEndian,
 
 const vertexSrc= `#version 100
 //uniform vec2 offset;
+uniform mat3 rotationMatrix;
 
 attribute vec4 position;
 void main() {
