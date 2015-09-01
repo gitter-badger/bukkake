@@ -8,6 +8,7 @@ import (
 	"golang.org/x/mobile/event/paint"
 	"golang.org/x/mobile/event/size"
 	"golang.org/x/mobile/event/lifecycle"
+	"golang.org/x/mobile/event/touch"
 
 	"golang.org/x/mobile/gl"
 	"golang.org/x/mobile/exp/f32"
@@ -25,10 +26,11 @@ var (
 	color    		gl.Uniform
 	matrixId 		gl.Uniform
 	resolutionId	gl.Uniform
-	buf      		gl.Buffer
+	//buf      		gl.Buffer
 	swBuf    		gl.Buffer
 	alpha    		float32 = 0.0
 	resIndex		float32
+	spin			bool
 	//rotationMatrix []float32
 
 )
@@ -51,6 +53,11 @@ func main() {
 			case paint.Event:
 				onPaint(sz)
 				a.EndPaint(e)
+			case touch.Event:
+				eventType := e.Type.String()
+				if eventType == "begin" {
+					spin = !spin
+				}
 			}
 		}
 	})
@@ -66,9 +73,9 @@ func onStart() {
 	}
 
 	// Creating buffer
-	buf = gl.CreateBuffer()
+	/*buf = gl.CreateBuffer()
 	gl.BindBuffer(gl.ARRAY_BUFFER, buf)
-	gl.BufferData(gl.ARRAY_BUFFER, triangleData, gl.STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, triangleData, gl.STATIC_DRAW)*/
 
 	swBuf = gl.CreateBuffer()
 	gl.BindBuffer(gl.ARRAY_BUFFER, swBuf)
@@ -83,7 +90,7 @@ func onStart() {
 
 func onStop() {
 	gl.DeleteProgram(program)
-	gl.DeleteBuffer(buf)
+	gl.DeleteBuffer(swBuf)
 }
 
 func onPaint(sz size.Event) {
@@ -92,8 +99,8 @@ func onPaint(sz size.Event) {
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
 	var rotationMatrix = []float32 {
-			f32.Cos(alpha), 	-f32.Sin(alpha), 	0.0, // top left
-			f32.Sin(alpha), 	f32.Cos(alpha), 	0.0, // bottom left
+			f32.Cos(-alpha), 	-f32.Sin(-alpha), 	0.0, // top left
+			f32.Sin(-alpha), 	f32.Cos(-alpha), 	0.0, // bottom left
 			0.0, 	0.0,    1.0, // bottom right
 		
 	}
@@ -112,7 +119,7 @@ func onPaint(sz size.Event) {
 	gl.DisableVertexAttribArray(position)
 
 
-	gl.UseProgram(program)
+	/*gl.UseProgram(program)
 	// setting color
 	gl.Uniform4f(color, 0.0, 1.0, 1.0, 1)
 	gl.Uniform1f(resolutionId, resIndex)
@@ -124,10 +131,16 @@ func onPaint(sz size.Event) {
 	gl.VertexAttribPointer(position, 3, gl.FLOAT, false, 0, 0)
 	gl.DrawArrays(gl.TRIANGLES, 0, 3)
 	gl.DisableVertexAttribArray(position)
+*/	
+	if spin == true{
+		alpha += 0.1
+	}
 
-	alpha += 0.01
+	if alpha >= 360 {
+		alpha = 0.0
+	}
 
-
+	//spin = false
 }
 
 var swastikaData = f32.Bytes(binary.LittleEndian,
@@ -142,11 +155,11 @@ var swastikaData = f32.Bytes(binary.LittleEndian,
 	
 )
 
-var triangleData = f32.Bytes(binary.LittleEndian,
+/*var triangleData = f32.Bytes(binary.LittleEndian,
 	0.0, 0.4, 0.0, // top left
 	0.0, 0.0, 0.0, // bottom left
 	0.4, 0.0, 0.0, // bottom right
-)
+)*/
 
 const vertexSrc= `#version 100
 //uniform vec2 offset;
