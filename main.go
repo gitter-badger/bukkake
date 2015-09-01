@@ -1,8 +1,6 @@
 package main
 
 import (
-	"encoding/binary"
-
 	"golang.org/x/mobile/app"
 
 	"golang.org/x/mobile/event/paint"
@@ -15,24 +13,24 @@ import (
 	"golang.org/x/mobile/exp/gl/glutil"
 
 	"log"
-	//"math"
+	
 
 )
 
 var (
 	program  		gl.Program
 	position 		gl.Attrib
-	//offset   		gl.Uniform
 	color    		gl.Uniform
 	matrixId 		gl.Uniform
 	resolutionId	gl.Uniform
-	//buf      		gl.Buffer
-	swBuf    		gl.Buffer
+
+	swasBuffer 		gl.Buffer
+	cubeBuffer 		gl.Buffer
+	indicesBuffer	gl.Buffer
+
 	alpha    		float32 = 0.0
 	resIndex		float32
 	spin			bool
-	//rotationMatrix []float32
-
 )
 
 func main() {
@@ -72,13 +70,16 @@ func onStart() {
 		return
 	}
 
-	// Creating buffer
-	/*buf = gl.CreateBuffer()
-	gl.BindBuffer(gl.ARRAY_BUFFER, buf)
-	gl.BufferData(gl.ARRAY_BUFFER, triangleData, gl.STATIC_DRAW)*/
+	cubeBuffer = gl.CreateBuffer()
+	gl.BindBuffer(gl.ARRAY_BUFFER, cubeBuffer)
+	gl.BufferData(gl.ARRAY_BUFFER, cubeData, gl.STATIC_DRAW)
 
-	swBuf = gl.CreateBuffer()
-	gl.BindBuffer(gl.ARRAY_BUFFER, swBuf)
+	indicesBuffer = gl.CreateBuffer()
+	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesBuffer)
+	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, cubeIndices, gl.STATIC_DRAW)
+
+	swasBuffer = gl.CreateBuffer()
+	gl.BindBuffer(gl.ARRAY_BUFFER, swasBuffer)
 	gl.BufferData(gl.ARRAY_BUFFER, swastikaData, gl.STATIC_DRAW)
 
 	position = gl.GetAttribLocation(program, "position")
@@ -90,12 +91,13 @@ func onStart() {
 
 func onStop() {
 	gl.DeleteProgram(program)
-	gl.DeleteBuffer(swBuf)
+	gl.DeleteBuffer(swasBuffer)
+	gl.DeleteBuffer(cubeBuffer)
 }
 
 func onPaint(sz size.Event) {
 	// Setting background
-	gl.ClearColor(0.2, 0.0, 0.0, 1)
+	gl.ClearColor(0.2, 0.0, 0.2, 1)
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
 	var rotationMatrix = []float32 {
@@ -111,7 +113,7 @@ func onPaint(sz size.Event) {
 	gl.UniformMatrix3fv(matrixId, rotationMatrix)
 	gl.Uniform1f(resolutionId, resIndex)
 
-	gl.BindBuffer(gl.ARRAY_BUFFER, swBuf)
+	gl.BindBuffer(gl.ARRAY_BUFFER, swasBuffer)
 
 	gl.EnableVertexAttribArray(position)
 	gl.VertexAttribPointer(position, 3, gl.FLOAT, false, 0, 0)
@@ -119,19 +121,20 @@ func onPaint(sz size.Event) {
 	gl.DisableVertexAttribArray(position)
 
 
-	/*gl.UseProgram(program)
+	gl.UseProgram(program)
 	// setting color
 	gl.Uniform4f(color, 0.0, 1.0, 1.0, 1)
 	gl.Uniform1f(resolutionId, resIndex)
 	gl.UniformMatrix3fv(matrixId, rotationMatrix)
 
-	gl.BindBuffer(gl.ARRAY_BUFFER, buf)
+	gl.BindBuffer(gl.ARRAY_BUFFER, cubeBuffer)
+	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesBuffer)
 
 	gl.EnableVertexAttribArray(position)
 	gl.VertexAttribPointer(position, 3, gl.FLOAT, false, 0, 0)
-	gl.DrawArrays(gl.TRIANGLES, 0, 3)
+	gl.DrawElements(gl.LINES, 48, gl.BYTE, 0)
 	gl.DisableVertexAttribArray(position)
-*/	
+
 	if spin == true{
 		alpha += 0.1
 	}
@@ -140,43 +143,4 @@ func onPaint(sz size.Event) {
 		alpha = 0.0
 	}
 
-	//spin = false
 }
-
-var swastikaData = f32.Bytes(binary.LittleEndian,
-	0.0, -0.5, 0.0,     0.0, 0.5, 0.0,
-	-0.5, -0.5, 0.0,    0.0, -0.5, 0.0,
-	0.0, 0.5, 0.0,      0.5, 0.5, 0.0,
-
-
-	-0.5, 0.5, 0.0,     -0.5, 0.0, 0.0,
-	-0.5, 0.0, 0.0,     0.5, 0.0, 0.0,
-	0.5, 0.0, 0.0,      0.5, -0.5, 0.0,
-	
-)
-
-/*var triangleData = f32.Bytes(binary.LittleEndian,
-	0.0, 0.4, 0.0, // top left
-	0.0, 0.0, 0.0, // bottom left
-	0.4, 0.0, 0.0, // bottom right
-)*/
-
-const vertexSrc= `#version 100
-//uniform vec2 offset;
-uniform mat3 rotationMatrix;
-uniform float resIndex;
-attribute vec4 position;
-void main() {
-	// offset comes in with x/y values between 0 and 1.
-	// position bounds are -1 to 1.
-	//vec4 offset4 = vec4(2.0*offset.x-1.0, 1.0-2.0*offset.y, 0, 0);
-	vec3 pos = rotationMatrix * position.xyz;
-	gl_Position = vec4(pos.x, pos.y*resIndex, pos.z, 1.0);
-}`
-
-const fragmentSrc = `#version 100
-precision mediump float;
-uniform vec4 color;
-void main() {
-	gl_FragColor = color;
-}`
