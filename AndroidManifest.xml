@@ -2,7 +2,7 @@
 
 <manifest
 	xmlns:android="http://schemas.android.com/apk/res/android"
-	package="BUKKAKE.keks"
+	package="BUKKAKE.UNIVERSAL.BUKKAKE"
 	android:versionCode="1"
 	android:versionName="1.0">
 
@@ -10,7 +10,7 @@
 
 	<uses-permission android:name="android.permission.INTERNET" />
 
-	<application android:label="LOVE KEKS" android:debuggable="true" android:icon="@icons/mipmap-mdpi/ic_launcher.png">
+	<application android:label="BUKKAKE" android:debuggable="true" android:icon="@mipmap/ic_launcher">
 
 	<activity android:name="org.golang.app.GoNativeActivity"
 		android:label="network"
