@@ -29,7 +29,7 @@ var (
 	buf      		gl.Buffer
 	swBuf    		gl.Buffer
 	alpha    		float32 = 0.0
-	resolution 		size.Event
+	resIndex		float32
 	//rotationMatrix []float32
 
 )
@@ -48,6 +48,7 @@ func main() {
 				}
 			case size.Event:
 				sz = e
+				resIndex = float32(sz.WidthPx)/float32(sz.HeightPx)
 			case paint.Event:
 				onPaint(sz)
 				a.EndPaint(e)
@@ -76,7 +77,7 @@ func onStart() {
 	position = gl.GetAttribLocation(program, "position")
 	color    = gl.GetUniformLocation(program, "color")
 	matrixId = gl.GetUniformLocation(program, "rotationMatrix")
-	//resolutionId = gl.GetUniformLocation(program, "resIndex")chee
+	resolutionId = gl.GetUniformLocation(program, "resIndex")
 
 }
 
@@ -101,7 +102,7 @@ func onPaint(sz size.Event) {
 	// setting color
 	gl.Uniform4f(color, 1.0, 1.0, 1.0, 1)
 	gl.UniformMatrix3fv(matrixId, rotationMatrix)
-	//gl.Uniform1f(resolutionId, resIndex)
+	gl.Uniform1f(resolutionId, resIndex)
 
 	gl.BindBuffer(gl.ARRAY_BUFFER, swBuf)
 
@@ -114,7 +115,7 @@ func onPaint(sz size.Event) {
 	gl.UseProgram(program)
 	// setting color
 	gl.Uniform4f(color, 0.0, 1.0, 1.0, 1)
-
+	gl.Uniform1f(resolutionId, resIndex)
 	gl.UniformMatrix3fv(matrixId, rotationMatrix)
 
 	gl.BindBuffer(gl.ARRAY_BUFFER, buf)
@@ -141,8 +142,6 @@ var swastikaData = f32.Bytes(binary.LittleEndian,
 	
 )
 
-//var resIndex = float32(resolution.WidthPx/resolution.HeightPx)
-
 var triangleData = f32.Bytes(binary.LittleEndian,
 	0.0, 0.4, 0.0, // top left
 	0.0, 0.0, 0.0, // bottom left
@@ -152,7 +151,7 @@ var triangleData = f32.Bytes(binary.LittleEndian,
 const vertexSrc= `#version 120
 //uniform vec2 offset;
 uniform mat3 rotationMatrix;
-//uniform float resIndex;
+uniform float resIndex;
 
 attribute vec4 position;
 void main() {
@@ -160,7 +159,7 @@ void main() {
 	// position bounds are -1 to 1.
 	//vec4 offset4 = vec4(2.0*offset.x-1.0, 1.0-2.0*offset.y, 0, 0);
 	vec3 pos = rotationMatrix * position.xyz;
-	gl_Position = vec4(pos.xyz, 1.0);
+	gl_Position = vec4(pos.x, pos.y*resIndex, pos.z, 1.0);
 }`
 
 const fragmentSrc = `#version 120
