@@ -20,13 +20,14 @@ import (
 var (
 	program  		gl.Program
 	position 		gl.Attrib
+	texture			gl.Attrib
 	color    		gl.Uniform
 	matrixId 		gl.Uniform
 	resolutionId	gl.Uniform
 
 	swasBuffer 		gl.Buffer
-	cubeBuffer 		gl.Buffer
-	indicesBuffer	gl.Buffer
+	quadBuffer 		gl.Buffer
+	quadTexBuffer	gl.Buffer
 
 	alpha    		float32 = 0.0
 	resIndex		float32
@@ -70,19 +71,20 @@ func onStart() {
 		return
 	}
 
-	cubeBuffer = gl.CreateBuffer()
-	gl.BindBuffer(gl.ARRAY_BUFFER, cubeBuffer)
-	gl.BufferData(gl.ARRAY_BUFFER, cubeData, gl.STATIC_DRAW)
+	quadBuffer = gl.CreateBuffer()
+	gl.BindBuffer(gl.ARRAY_BUFFER, quadBuffer)
+	gl.BufferData(gl.ARRAY_BUFFER, quadData, gl.STATIC_DRAW)
 
-	indicesBuffer = gl.CreateBuffer()
-	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesBuffer)
-	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, cubeIndices, gl.STATIC_DRAW)
+	quadTexBuffer = gl.CreateBuffer()
+	gl.BindBuffer(gl.ARRAY_BUFFER, quadTexBuffer)
+	gl.BufferData(gl.ARRAY_BUFFER, quadTexData, gl.STATIC_DRAW)
 
 	swasBuffer = gl.CreateBuffer()
 	gl.BindBuffer(gl.ARRAY_BUFFER, swasBuffer)
 	gl.BufferData(gl.ARRAY_BUFFER, swastikaData, gl.STATIC_DRAW)
 
 	position = gl.GetAttribLocation(program, "position")
+	texture  = gl.GetAttribLocation(program, "texCoords")
 	color    = gl.GetUniformLocation(program, "color")
 	matrixId = gl.GetUniformLocation(program, "rotationMatrix")
 	resolutionId = gl.GetUniformLocation(program, "resIndex")
@@ -92,7 +94,7 @@ func onStart() {
 func onStop() {
 	gl.DeleteProgram(program)
 	gl.DeleteBuffer(swasBuffer)
-	gl.DeleteBuffer(cubeBuffer)
+	gl.DeleteBuffer(quadBuffer)
 }
 
 func onPaint(sz size.Event) {
@@ -123,17 +125,19 @@ func onPaint(sz size.Event) {
 
 	gl.UseProgram(program)
 	// setting color
-	gl.Uniform4f(color, 0.0, 1.0, 1.0, 1)
+	gl.Uniform4f(color, 0.0, 0.0, 0.0, 1)
 	gl.Uniform1f(resolutionId, resIndex)
 	gl.UniformMatrix3fv(matrixId, rotationMatrix)
 
-	gl.BindBuffer(gl.ARRAY_BUFFER, cubeBuffer)
-	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesBuffer)
+	gl.BindBuffer(gl.ARRAY_BUFFER, quadBuffer)
+	//gl.BindBuffer(gl.ARRAY_BUFFER, quadTexBuffer)
 
 	gl.EnableVertexAttribArray(position)
+	//gl.EnableVertexAttribArray(texture)
 	gl.VertexAttribPointer(position, 3, gl.FLOAT, false, 0, 0)
-	gl.DrawElements(gl.LINES, 48, gl.BYTE, 0)
+	gl.DrawArrays(gl.TRIANGLES, 0, 6)
 	gl.DisableVertexAttribArray(position)
+	//gl.DisableVertexAttribArray(texture)
 
 	if spin == true{
 		alpha += 0.1
