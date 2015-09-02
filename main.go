@@ -12,9 +12,6 @@ import (
 	"golang.org/x/mobile/exp/f32"
 	"golang.org/x/mobile/exp/gl/glutil"
 
-	"log"
-	
-
 )
 
 var (
@@ -64,12 +61,10 @@ func main() {
 
 func onStart() {
 	array := loadShaders("vShader.vs", "fShader.vs")
-	var err error
-	program, err = glutil.CreateProgram(array[0], array[1])
-	if err != nil {
-		log.Printf("error creating GL program: %v", err)
-		return
-	}
+
+	var e error
+	program, e = glutil.CreateProgram(array[0], array[1])
+	crash_check(e)
 
 	quadBuffer = gl.CreateBuffer()
 	gl.BindBuffer(gl.ARRAY_BUFFER, quadBuffer)
@@ -78,6 +73,10 @@ func onStart() {
 	quadTexBuffer = gl.CreateBuffer()
 	gl.BindBuffer(gl.ARRAY_BUFFER, quadTexBuffer)
 	gl.BufferData(gl.ARRAY_BUFFER, quadTexData, gl.STATIC_DRAW)
+
+	guadBuffer2 = gl.CreateBuffer()
+	gl.BindBuffer(gl.ARRAY_BUFFER, quadBuffer2)
+	gl.BufferData(gl.ARRAY_BUFFER, guadData )
 
 	swasBuffer = gl.CreateBuffer()
 	gl.BindBuffer(gl.ARRAY_BUFFER, swasBuffer)
@@ -111,7 +110,7 @@ func onPaint(sz size.Event) {
 
 	gl.UseProgram(program)
 	// setting color
-	gl.Uniform4f(color, 1.0, 1.0, 1.0, 1)
+	gl.Uniform4f(color, rgb(255), rgb(255), rgb(255), 1)
 	gl.UniformMatrix3fv(matrixId, rotationMatrix)
 	gl.Uniform1f(resolutionId, resIndex)
 
@@ -125,7 +124,7 @@ func onPaint(sz size.Event) {
 
 	gl.UseProgram(program)
 	// setting color
-	gl.Uniform4f(color, 0.0, 0.0, 0.0, 1)
+	gl.Uniform4f(color, rgb(130), rgb(50), rgb(80), 1)
 	gl.Uniform1f(resolutionId, resIndex)
 	gl.UniformMatrix3fv(matrixId, rotationMatrix)
 

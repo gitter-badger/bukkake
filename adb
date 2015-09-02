@@ -1,0 +1,1 @@
+/home/lrod/Android/Sdk/platform-tools/adb

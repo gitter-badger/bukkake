@@ -15,3 +15,7 @@ func def_check(e error) {
 		fmt.Println(e)
 	}
 }
+
+func rgb(color int) float32 {
+	return float32(color) / 255
+}
