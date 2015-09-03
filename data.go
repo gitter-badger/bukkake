@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 )
 
-var swastikaData = f32.Bytes(binary.LittleEndian,
+var dswastikaData = f32.Bytes(binary.LittleEndian,
 	0.0, -0.5, 0.0,     0.0, 0.5, 0.0,
 	-0.5, -0.5, 0.0,    0.0, -0.5, 0.0,
 	0.0, 0.5, 0.0,      0.5, 0.5, 0.0,
@@ -15,6 +15,17 @@ var swastikaData = f32.Bytes(binary.LittleEndian,
 	-0.5, 0.0, 0.0,     0.5, 0.0, 0.0,
 	0.5, 0.0, 0.0,      0.5, -0.5, 0.0,
 	
+)
+
+var swastikaData = f32.Bytes(binary.LittleEndian,
+	-0.4, -0.2, 0.0,    0.0, 0.4, 0.0,
+	-0.4, -0.2, 0.0,    0.4, -0.2, 0.0,
+	0.0, 0.4, 0.0,      0.4, -0.2, 0.0,
+
+
+	-0.4, 0.2, 0.0,     0.4, 0.2, 0.0,
+	-0.4, 0.2, 0.0,     0.0, -0.4, 0.0,
+	0.0, -0.4, 0.0,     0.4, 0.2, 0.0,
 )
 
 var quadData = f32.Bytes(binary.LittleEndian,
