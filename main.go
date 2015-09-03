@@ -3,44 +3,40 @@ package main
 import (
 	"golang.org/x/mobile/app"
 
+	"golang.org/x/mobile/event/lifecycle"
 	"golang.org/x/mobile/event/paint"
 	"golang.org/x/mobile/event/size"
-	"golang.org/x/mobile/event/lifecycle"
 	"golang.org/x/mobile/event/touch"
 
-	"golang.org/x/mobile/gl"
 	"golang.org/x/mobile/exp/f32"
 	"golang.org/x/mobile/exp/gl/glutil"
-
+	"golang.org/x/mobile/gl"
 )
 
 var (
-	program  		gl.Program
-	position 		gl.Attrib
-	color    		gl.Uniform
-	matrixId 		gl.Uniform
-	resolutionId	gl.Uniform
+	program      gl.Program
+	position     gl.Attrib
+	color        gl.Uniform
+	matrixId     gl.Uniform
+	resolutionId gl.Uniform
 
-	swasBuffer 		gl.Buffer
+	swasBuffer gl.Buffer
 
-	quadBuffer 		gl.Buffer
-	quadTexBuffer	gl.Buffer
+	quadBuffer    gl.Buffer
+	quadTexBuffer gl.Buffer
 
-	textureId		gl.Texture
+	textureId gl.Texture
 
-	alpha    		float32 = 0.0
-	resIndex		float32
-	spin			bool
+	alpha    float32 = 0.0
+	resIndex float32
+	spin     bool
 
-
-	texProgram		gl.Program
-	position2		gl.Attrib
-	textureCoords	gl.Attrib
-	matrixId2		gl.Uniform
-	resolutionId2	gl.Uniform
-	color2    		gl.Uniform
-
-
+	texProgram    gl.Program
+	position2     gl.Attrib
+	textureCoords gl.Attrib
+	matrixId2     gl.Uniform
+	resolutionId2 gl.Uniform
+	color2        gl.Uniform
 )
 
 func main() {
@@ -50,14 +46,14 @@ func main() {
 			switch e := app.Filter(e).(type) {
 			case lifecycle.Event:
 				switch e.Crosses(lifecycle.StageVisible) {
-					case lifecycle.CrossOn:
-						onStart()
-					case lifecycle.CrossOff:
-						onStop()
+				case lifecycle.CrossOn:
+					onStart()
+				case lifecycle.CrossOff:
+					onStop()
 				}
 			case size.Event:
 				sz = e
-				resIndex = float32(sz.WidthPx)/float32(sz.HeightPx)
+				resIndex = float32(sz.WidthPx) / float32(sz.HeightPx)
 			case paint.Event:
 				onPaint(sz)
 				a.EndPaint(e)
@@ -77,8 +73,7 @@ func onStart() {
 
 	array := loadShaders("vShader.vs", "fShader.vs")
 	array2 := loadShaders("vTexShader.vs", "fTexShader.vs")
-	pic := loadSources("qwert.png")
-
+	pic := loadImages("495.png")
 
 	textureId = gl.CreateTexture()
 	gl.BindTexture(gl.TEXTURE_2D, textureId)
@@ -89,7 +84,6 @@ func onStart() {
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
-
 
 	var e error
 	program, e = glutil.CreateProgram(array[0], array[1])
@@ -111,7 +105,7 @@ func onStart() {
 	gl.BufferData(gl.ARRAY_BUFFER, swastikaData, gl.STATIC_DRAW)
 
 	position = gl.GetAttribLocation(program, "position")
-	color    = gl.GetUniformLocation(program, "color")
+	color = gl.GetUniformLocation(program, "color")
 	matrixId = gl.GetUniformLocation(program, "rotationMatrix")
 	resolutionId = gl.GetUniformLocation(program, "resIndex")
 
@@ -119,7 +113,7 @@ func onStart() {
 	textureCoords = gl.GetAttribLocation(texProgram, "texCoords")
 	matrixId2 = gl.GetUniformLocation(texProgram, "rotationMatrix")
 	resolutionId2 = gl.GetUniformLocation(texProgram, "resIndex")
-	color2    = gl.GetUniformLocation(texProgram, "color")
+	color2 = gl.GetUniformLocation(texProgram, "color")
 
 }
 
@@ -134,11 +128,11 @@ func onPaint(sz size.Event) {
 	gl.ClearColor(0.2, 0.0, 0.2, 1)
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
-	var rotationMatrix = []float32 {
-			f32.Cos(-alpha), 	-f32.Sin(-alpha), 	0.0, // top left
-			f32.Sin(-alpha), 	f32.Cos(-alpha), 	0.0, // bottom left
-			0.0, 	0.0,    1.0, // bottom right
-		
+	var rotationMatrix = []float32{
+		f32.Cos(-alpha), -f32.Sin(-alpha), 0.0, // top left
+		f32.Sin(-alpha), f32.Cos(-alpha), 0.0, // bottom left
+		0.0, 0.0, 1.0, // bottom right
+
 	}
 
 	gl.UseProgram(program)
@@ -153,7 +147,6 @@ func onPaint(sz size.Event) {
 	gl.VertexAttribPointer(position, 3, gl.FLOAT, false, 0, 0)
 	gl.DrawArrays(gl.LINES, 0, 16)
 	gl.DisableVertexAttribArray(position)
-
 
 	gl.UseProgram(texProgram)
 	// setting color
@@ -172,13 +165,12 @@ func onPaint(sz size.Event) {
 	gl.Uniform1i(gl.GetUniformLocation(texProgram, "myTexture"), 0)
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, textureId)
-	
 
 	gl.DrawArrays(gl.TRIANGLES, 0, 6)
 	gl.DisableVertexAttribArray(position2)
 	gl.DisableVertexAttribArray(textureCoords)
 
-	if spin == true{
+	if spin == true {
 		alpha += 0.1
 	}
 
