@@ -1,12 +1,15 @@
 package main
 
 import (
-	"bytes"
 	"golang.org/x/mobile/asset"
 
 	"image"
 	"image/draw"
-	"image/png"
+	_ "image/png"
+
+	"golang.org/x/mobile/exp/gl/glutil"
+	"golang.org/x/mobile/gl"
+	"io/ioutil"
 )
 
 func loadImages(path string) *image.RGBA {
@@ -27,57 +30,22 @@ func loadImages(path string) *image.RGBA {
 	return rgba
 }
 
-func loadSources(paths ...string) [][]byte {
-	// reading files up to 1KB
-	buffer := make([]byte, 1024)
-	// reading 4 files at the time
-	sources := make([][]byte, 2)
-
-	for index, path := range paths {
-		file, e := asset.Open(path)
-		def_check(e)
-
-		n, e := file.Read(buffer)
-		def_check(e)
-
-		sources[index] = buffer[:n]
-	}
-	return sources
-}
-
-func loadShaders(paths ...string) []string {
-	// reading files up to 1KB
-	buffer := make([]byte, 1024)
-	// reading 2 shaders
-	sources := make([]string, 2)
-
-	for index, path := range paths {
-		file, e := asset.Open(path)
-		def_check(e)
-
-		n, e := file.Read(buffer)
-		def_check(e)
-
-		sources[index] = string(buffer[:n])
-	}
-	return sources
-}
-
-func testImage() []byte {
-	var img image.Image
-	buffer := new(bytes.Buffer)
-
-	imgFile, e := asset.Open("pee.png")
+func loadSource(path string) ([]byte, error) {
+	sourceFile, e := asset.Open(path)
+	defer sourceFile.Close()
 	def_check(e)
-
-	img, _, e = image.Decode(imgFile)
-	e = png.Encode(buffer, img)
-	return buffer.Bytes()
-
-	//return img
+	return ioutil.ReadAll(sourceFile)
 }
 
-func onePixel() []byte {
-	pixel := []byte{255, 255, 255, 255}
-	return pixel
+func createProgram(vShaderPath, fShaderPath string) gl.Program {
+	// loading vertex shader
+	vShader, e := loadSource(vShaderPath)
+	def_check(e)
+	// loading fragment shader
+	fShader, e := loadSource(fShaderPath)
+	def_check(e)
+	// linking program
+	program, e := glutil.CreateProgram(string(vShader), string(fShader))
+	crash_check(e)
+	return program
 }

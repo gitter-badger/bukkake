@@ -11,7 +11,7 @@ import (
 	"golang.org/x/mobile/event/touch"
 
 	"golang.org/x/mobile/exp/f32"
-	"golang.org/x/mobile/exp/gl/glutil"
+
 	"golang.org/x/mobile/gl"
 )
 
@@ -73,27 +73,21 @@ func onStart() {
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
 
-	array := loadShaders("vShader.vs", "fShader.vs")
-	array2 := loadShaders("vTexShader.vs", "fTexShader.vs")
-	pic := loadImages("495.png")
+	texture := loadImages("495.png")
 
 	textureId = gl.CreateTexture()
-	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, textureId)
 
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
 
-	gl.TexImage2D(gl.TEXTURE_2D, 0, pic.Rect.Size().X, pic.Rect.Size().Y, gl.RGBA, gl.UNSIGNED_BYTE, pic.Pix)
+	gl.TexImage2D(gl.TEXTURE_2D, 0, texture.Rect.Size().X, texture.Rect.Size().Y, gl.RGBA, gl.UNSIGNED_BYTE, texture.Pix)
 
-	var e error
-	program, e = glutil.CreateProgram(array[0], array[1])
-	crash_check(e)
-
-	texProgram, e = glutil.CreateProgram(array2[0], array2[1])
-	crash_check(e)
+	// loading Shaders & linking programs
+	program = createProgram("vShader.vs", "fShader.vs")
+	texProgram = createProgram("vTexShader.vs", "fTexShader.vs")
 
 	quadBuffer = gl.CreateBuffer()
 	gl.BindBuffer(gl.ARRAY_BUFFER, quadBuffer)
@@ -117,25 +111,21 @@ func onStart() {
 	matrixId2 = gl.GetUniformLocation(texProgram, "rotationMatrix")
 	resolutionId2 = gl.GetUniformLocation(texProgram, "resIndex")
 	color2 = gl.GetUniformLocation(texProgram, "color")
-
 }
 
 func onStop() {
 	gl.DeleteProgram(program)
 	gl.DeleteBuffer(swasBuffer)
-	//gl.DeleteBuffer(quadBuffer)
 }
 
 func onPaint(sz size.Event) {
-	// Setting background
 	gl.ClearColor(rgb(156), rgb(39), rgb(176), 1)
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
 	var rotationMatrix = []float32{
-		f32.Cos(-alpha), -f32.Sin(-alpha), 0.0, // top left
-		f32.Sin(-alpha), f32.Cos(-alpha), 0.0, // bottom left
-		0.0, 0.0, 1.0, // bottom right
-
+		f32.Cos(-alpha), -f32.Sin(-alpha), 0.0,
+		f32.Sin(-alpha), f32.Cos(-alpha), 0.0,
+		0.0, 0.0, 1.0,
 	}
 
 	gl.UseProgram(program)
@@ -148,7 +138,7 @@ func onPaint(sz size.Event) {
 
 	gl.EnableVertexAttribArray(position)
 	gl.VertexAttribPointer(position, 3, gl.FLOAT, false, 0, 0)
-	//gl.DrawArrays(gl.LINES, 0, 16)
+	gl.DrawArrays(gl.LINES, 0, 16)
 	gl.DisableVertexAttribArray(position)
 
 	gl.UseProgram(texProgram)
