@@ -1,3 +1,5 @@
+// TODO : CLEAN THIS GARBAGE
+
 package main
 
 import (
@@ -76,14 +78,15 @@ func onStart() {
 	pic := loadImages("495.png")
 
 	textureId = gl.CreateTexture()
+	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, textureId)
 
-	gl.TexImage2D(gl.TEXTURE_2D, 0, 256, 256, gl.RGBA, gl.UNSIGNED_BYTE, pic[0])
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
+	gl.TexImage2D(gl.TEXTURE_2D, 0, pic.Rect.Size().X, pic.Rect.Size().Y, gl.RGBA, gl.UNSIGNED_BYTE, pic.Pix)
 
 	var e error
 	program, e = glutil.CreateProgram(array[0], array[1])
@@ -125,7 +128,7 @@ func onStop() {
 
 func onPaint(sz size.Event) {
 	// Setting background
-	gl.ClearColor(0.2, 0.0, 0.2, 1)
+	gl.ClearColor(rgb(156), rgb(39), rgb(176), 1)
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
 	var rotationMatrix = []float32{
@@ -145,7 +148,7 @@ func onPaint(sz size.Event) {
 
 	gl.EnableVertexAttribArray(position)
 	gl.VertexAttribPointer(position, 3, gl.FLOAT, false, 0, 0)
-	gl.DrawArrays(gl.LINES, 0, 16)
+	//gl.DrawArrays(gl.LINES, 0, 16)
 	gl.DisableVertexAttribArray(position)
 
 	gl.UseProgram(texProgram)
